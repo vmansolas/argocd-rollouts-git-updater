@@ -7,7 +7,7 @@ The controller runs on the same cluster as the argocd server and watches for upd
 
 ref: https://github.com/argoproj/argo-rollouts/issues/1153
 
-#### Restrictions/Assumptions:
+#### Restrictions/Assumptions
 For the controller to work smoothly the following need to be met:
 - The App is using Kustomize
 - Image updates are controlled by the "images" in Kustomization.yaml
@@ -36,7 +36,7 @@ DOCKER_IMAGE_ORG=docker.io/myorganization PLATFORM=linux/arm64 make docker-push
 ```
 
 
-Deploy Manifests:
+### Deploy to kubernetes
 
 ```bash
 kustomize build manifests| kubectl apply -f -

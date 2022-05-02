@@ -24,14 +24,21 @@ For the controller to work smoothly the following need to be met:
 Prerequisite Tools: bash, awk, git
 Build shell-operator image with custom script:
 
-```
+Manually:
+```bash
 docker build . -t <org>/argocd-rollouts-git-updater:v0.1
 docker push <org>/argocd-rollouts-git-updater:v0.1
 ```
 
+Using make (with proper versioning for Releases):
+```bash
+DOCKER_IMAGE_ORG=docker.io/myorganization PLATFORM=linux/arm64 make docker-push
+```
+
+
 Deploy Manifests:
 
-```
+```bash
 kustomize build manifests| kubectl apply -f -
 ```
 

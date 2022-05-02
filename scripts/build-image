@@ -19,3 +19,7 @@ if [ ! -z ${USE_KIND+x} ]; then
   cluster_name=$(kubectl config current-context | sed 's/^kind-//')
   kind load docker-image "$image" --name "$cluster_name"
 fi
+
+if [ ! -z ${DOCKER_PUSH+x} ]; then
+  docker push ${image}
+fi

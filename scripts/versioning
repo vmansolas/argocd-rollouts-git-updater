@@ -10,7 +10,8 @@ GIT_SHA=$(echo "${GIT_DESCRIBE}" | awk -F - '{ print $3 }' )
 GIT_TAG=$(echo "${GIT_DESCRIBE}" | awk -F - '{ print $1 }')
 
 ARTIFACT_VERSION="${GIT_TAG}"
-if [ ! -z ${GIT_COMMITS+x} ]; then
+if [ ! -z "${GIT_COMMITS}" ]; then
   ARTIFACT_VERSION="${ARTIFACT_VERSION}-${GIT_COMMITS}.${GIT_SHA}"
 fi
 
+echo $ARTIFACT_VERSION

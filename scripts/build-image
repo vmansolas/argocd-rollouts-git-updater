@@ -1,0 +1,21 @@
+#!/bin/bash
+
+set -euo pipefail
+
+GIT_ROOT="${GIT_ROOT:-$(git rev-parse --show-toplevel)}"
+. "$GIT_ROOT/scripts/versioning"
+. "$GIT_ROOT/scripts/docker"
+
+image="${DOCKER_IMAGE_ORG:+$DOCKER_IMAGE_ORG/}$svc_name:$DOCKER_IMAGE_TAG"
+
+if [ -z ${PLATFORM+x} ]; then
+  PLATFORM="linux/amd64"
+  export PLATFORM
+fi
+
+docker build . -t ${image} --platform $PLATFORM
+
+if [ ! -z ${USE_KIND+x} ]; then
+  cluster_name=$(kubectl config current-context | sed 's/^kind-//')
+  kind load docker-image "$image" --name "$cluster_name"
+fi

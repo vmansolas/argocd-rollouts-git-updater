@@ -1,0 +1,24 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: argocd-rollouts-git-updater
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: argocd-rollouts-git-updater
+  template:
+    metadata:
+      labels:
+        app: argocd-rollouts-git-updater
+    spec:
+      containers:
+      - name: argocd-rollouts-git-updater
+        image: argocd-rollouts-git-updater:latest
+        env:
+        - name: LOG_LEVEL
+          value: info
+        - name: CONFIG_CM
+          value: argocd-cm
+      serviceAccountName: argocd-rollouts-git-updater

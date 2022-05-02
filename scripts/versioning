@@ -3,7 +3,7 @@
 # This produces a semver compatible pre-release version number from "git
 # describe" output.
 
-GIT_DESCRIBE=$(git describe --tags --long || (git tag -a v0.0.0 -m "tag v0.0.0"; git describe --tags --long))
+GIT_DESCRIBE=$(git describe --tags || (git tag -a v0.0.0 -m "tag v0.0.0"; git describe --tags))
 
 GIT_COMMITS=$(echo "${GIT_DESCRIBE}" | awk -F - '{ print $2 }')
 GIT_SHA=$(echo "${GIT_DESCRIBE}" | awk -F - '{ print $3 }' )

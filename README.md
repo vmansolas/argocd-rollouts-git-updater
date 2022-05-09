@@ -11,6 +11,7 @@ ref: https://github.com/argoproj/argo-rollouts/issues/1153
 For the controller to work smoothly the following need to be met:
 - The App is using Kustomize
 - Image updates are controlled by the "images" in Kustomization.yaml
+- The failing Rollout resource was updated during the last Sync action
 - The application references a branch or HEAD
 
 ### TODOs

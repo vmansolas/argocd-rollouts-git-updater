@@ -27,25 +27,14 @@ else
   set -e
   set -o pipefail
 
-  # ARGOCDCM=argocd-cm
   ARGOCDCM="${CONFIG_CM:=argocd-cm}"
 
   APP_STATUS=$(jq -r '.[0].object.status.health.status' ${BINDING_CONTEXT_PATH})
   APP_GIT_URL=$(jq -r '.[0].object.spec.source.repoURL' ${BINDING_CONTEXT_PATH})
-  # APP_GIT_URL=http://gitea-http.gitea.svc.cluster.local:3000/gitops/cluster-config.git
   APP_GIT_REF=$(jq -r '.[0].object.spec.source.targetRevision' ${BINDING_CONTEXT_PATH})
   APP_GIT_PATH=$(jq -r '.[0].object.spec.source.path' ${BINDING_CONTEXT_PATH})
-  # APP_GIT_PATH=apps/rollouts-demo/overlays/mycluster
 
   APP_GIT_URL_BASE=$(echo $APP_GIT_URL | perl -pe 's!(http(s|)://(.*?))/.*!$1!g')
-
-  #argocd-rollouts-git-updater.argoproj.io/enabled: true
-  #TODO:check App has correct annotation.
-  #check App Status is Degraded else exit.
-
-  #check Rollout Status is Degraded else exit.
-  #check syncResult for last action if the degrated Rollout(s) were updated else exit.
-  #check App is using kustomize
 
   if [ "$APP_STATUS" != "Degraded" ]; then
     echo "Skipping: App not Degraded"
@@ -75,7 +64,7 @@ else
 
   if kubectl get cm $ARGOCDCM >/dev/null 2>&1; then
     echo "Checking git credentials from $ARGOCDCM"
-    #this may be a list
+
     kubectl get cm $ARGOCDCM -oyaml | yq e '.data.["repository.credentials"]' - >$TEMPDIR/gitcreds.txt
 
     cat $TEMPDIR/gitcreds.txt | yq e '.[] |select(.url == "'$APP_GIT_URL_BASE'*").passwordSecret' - >$TEMPDIR/gitcredssecret.txt
@@ -89,12 +78,6 @@ else
     fi
   fi
 
-  # revision=$(cat app.json |jq '.status.operationState.syncResult.revision')
-  # id=$(cat app.json |jq '.status.history[] |select(.revision == '$revision').id')
-  # previousid=$(expr $id - 1)
-  # rollbackrevision=$(cat app.json |jq '.status.history[] |select(.id == '$previousid').revision'|perl -pe 's/"//g')
-  #we do not want to rollback all changes from this commit.
-
   git config --global user.name "argocd-rollouts-git-updater"
   git config --global user.email argocd-rollouts-git-updater@argocd-rollouts-git-updater.gitops
 
@@ -104,7 +87,7 @@ else
   #for images already in kustomization loop through them and update with the latest from the app_list
   imagelist=($(cat kustomization.yaml | yq e '.images[] as $item ireduce ({}; .[$item | .name]= ($item | .newName + ":"  + .newTag) )' - | perl -pe 's/.*?: //g'))
   appimagelist=($(jq -r '.[0].object.status.summary.images[]' ${BINDING_CONTEXT_PATH} | tac | awk -F ':' '!seen[$1]++'))
-  #TODO: remove duplicates
+
   for i in $imagelist; do
     echo "Checking $i"
     if [[ ! " ${appimagelist[*]} " =~ " ${i} " ]]; then
@@ -119,7 +102,7 @@ else
   cat kustomization.yaml | yq e '.' - >kustomization-new.yaml
   mv kustomization-new.yaml kustomization.yaml
   git add .
-  # message=$(jq -r '.[0].object.status.resources[]|select((.kind == "Rollout") and .health.status == "Degraded" ).health.message' ${BINDING_CONTEXT_PATH}) | cut -c -80
+  
   message="Rollout Failed: Images updated: $updatedimages"
   git diff --ignore-space-at-eol -b -w --ignore-blank-lines --staged --quiet || git commit -m "${message}..."
   git push
